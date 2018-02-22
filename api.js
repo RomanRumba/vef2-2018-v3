@@ -110,27 +110,26 @@ router.put('/:id', (req, res) => {
   if (error !== null) {
     res.status(400).json(error);
   } else {
-  readOne(id).then(data => {
-    // Ef það fæst tómt obj þá er nótan ekki til i pg 
-    if (data.length === 0) {
-      res.status(404).json({ error: 'id not found' });
-    } else {
-      const error = checkForErrors({ title, text, datetime });
-      if (error.length > 0) {
-        res.status(400).json(error);
+      readOne(id).then(data => {
+      // Ef það fæst tómt obj þá er nótan ekki til i pg
+      if (data.length === 0) {
+        res.status(404).json({ error: 'id not found' });
       } else {
-        update(id ,{ title, text, datetime }).then(data => { res.status(201).json(data);});
+        const errors = checkForErrors({ title, text, datetime });
+        if (errors.length > 0) {
+          res.status(400).json(errors);
+        } else {
+          update(id, { title, text, datetime }).then(Qresult => { res.status(201).json(Qresult); });
+        }
       }
-    }
-  });
-}
+    });
+  }
 });
 
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-
- const error = validateId(id);
-  if (error !== null){
+  const error = validateId(id);
+  if (error !== null) {
     res.status(400).json(error);
   } else {
     readOne(id).then(data => {
