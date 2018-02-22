@@ -50,7 +50,7 @@ function validateId(id) {
 /* Ef er spurt um rót, þá er kallað á fallið readAll()
    sem sækir öll rows úr gagnagruni og það er skila til notandans */
 router.get('/', (req, res) => {
-  readAll().then(data => {res.status(200).json(data);});
+  readAll().then(data => {(res.status(200).json(data))});
 });
 
 /* Ef stödd á rót og spurt um id
@@ -133,15 +133,14 @@ router.delete('/:id', (req, res) => {
   if (error !== null){
     res.status(400).json(error);
   } else {
-  readOne(id).then(data => {
-    // Ef það fæst tómt obj þá er nótan ekki til i pg 
-    if (data.length === 0) {
-      res.status(404).json({ error: 'færsla er ekki til' });
-    } else {
-      del(id).then( res.status(204).json());
-    }
-  });
-}
+    readOne(id).then(data => {
+    // Ef það fæst tómt obj þá er nótan ekki til i pg
+      if (data.length === 0) {
+        res.status(404).json({ error: 'færsla er ekki til' });
+      } else {
+        del(id).then(res.status(204).json());
+      }
+    });
+  }
 });
-
 module.exports = router;
