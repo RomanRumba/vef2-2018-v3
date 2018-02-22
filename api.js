@@ -50,12 +50,12 @@ function validateId(id) {
 /* Ef er spurt um rót, þá er kallað á fallið readAll()
    sem sækir öll rows úr gagnagruni og það er skila til notandans */
 router.get('/', (req, res) => {
-  readAll().then(data => {(res.status(200).json(data))});
+  readAll().then((data) => { res.status(200).json(data); });
 });
 
 /* Ef stödd á rót og spurt um id
-   þá er sótt Id og villu chekkað hana ef hun stends ekki við kröfu 
-   það er skilað 400 villu með villu ástæðu 
+   þá er sótt Id og villu chekkað hana ef hun stends ekki við kröfu
+   það er skilað 400 villu með villu ástæðu
    annars ef það er i lagi skilað 200 með json hlut sem hefur
    sama id sem aðili bað um */
 router.get('/:id', (req, res) => {
@@ -66,22 +66,21 @@ router.get('/:id', (req, res) => {
     res.status(400).json(error);
   } else {
   // Ef það er komist hingað þá er amk leitarstrengur löglegur
-  readOne(id).then(data => {
-    // Ef það fæst tómt obj þá er nótan ekki til i pg 
-    if (data.length === 0) {
-      res.status(404).json({ error: 'Note not found' });
-    } else {
-    res.status(200).json(data);
-    }
-  });
+    readOne(id).then((data) => {
+    // Ef það fæst tómt obj þá er nótan ekki til i pg
+      if (data.length === 0) {
+        res.status(404).json({ error: 'Note not found' });
+      } else {
+        res.status(200).json(data);
+      }
+    });
   }
 });
 
-/* Ef stödd á rót og gerum post þá er athugað 
+/* Ef stödd á rót og gerum post þá er athugað
    hvort gögnin eru á löglegu formi ef þau eru ekki þá er
-   skilað villu meldingunar með 400 kóða 
-   annars þá er kallað 
- */
+   skilað villu meldingunar með 400 kóða
+   annars þá er kallað */
 router.post('/', (req, res) => {
   const {
     datetime,
@@ -93,7 +92,7 @@ router.post('/', (req, res) => {
   if (error.length > 0) {
     res.status(400).json(error);
   } else {
-  create({ title, text, datetime }).then(data => { res.status(201).json(data);});
+    create({ title, text, datetime }).then((data) => { res.status(201).json(data); });
   }
 });
 
@@ -106,11 +105,11 @@ router.put('/:id', (req, res) => {
     title,
   } = req.body;
 
- const error = validateId(id);
+  const error = validateId(id);
   if (error !== null) {
     res.status(400).json(error);
   } else {
-      readOne(id).then(data => {
+    readOne(id).then((data) => {
       // Ef það fæst tómt obj þá er nótan ekki til i pg
       if (data.length === 0) {
         res.status(404).json({ error: 'id not found' });
@@ -119,7 +118,9 @@ router.put('/:id', (req, res) => {
         if (errors.length > 0) {
           res.status(400).json(errors);
         } else {
-          update(id, { title, text, datetime }).then(Qresult => { res.status(201).json(Qresult); });
+          update(id, { title, text, datetime }).then((Qresult) => {
+            res.status(201).json(Qresult);
+          });
         }
       }
     });
@@ -132,7 +133,7 @@ router.delete('/:id', (req, res) => {
   if (error !== null) {
     res.status(400).json(error);
   } else {
-    readOne(id).then(data => {
+    readOne(id).then((data) => {
     // Ef það fæst tómt obj þá er nótan ekki til i pg
       if (data.length === 0) {
         res.status(404).json({ error: 'færsla er ekki til' });
