@@ -18,6 +18,12 @@ const {
 
 const router = express.Router();
 
+/* Notkun : checkForErrors({ title, text, datetime })
+   Fyrir  : title er strengur ,
+            text er strengur
+            datetime er  ISO 8601 date snið
+    Eftir : skilar error fylki sem er sett af villumeldingum fyrir
+            breytur title,text,datetime */
 function checkForErrors({ title, text, datetime }) {
   const error = [];
   if (title.length < 1 || title.length > 255) {
@@ -32,42 +38,41 @@ function checkForErrors({ title, text, datetime }) {
   return error;
 }
 
+/* Notkun : validateId(id)
+   Fyrir  : id er heiltala > 0
+   Efitr  : skilar json obj sem er villu melding
+            eða ekkert ef id er löglegt gildi */
 function validateId(id) {
   if (isNaN(id)) { // eslint-disable-line
     return { error: 'Id has to be a whole number' };
   }
-  // Ef notandi reynir að slá tölu lægri en 1 , id incrementation byrjar á 1 i pg
   if (parseInt(id, 10) < 1) {
     return { error: 'Id has to be a number that is bigger or equal to 1' };
   }
-  // Ef notandi reynir að slá inn brotatölu þá er það bannað
   if (parseFloat(id) % 1 !== 0) {
     return { error: 'Id has to be a whole number that is bigger or equal to 1' };
   }
   return null;
 }
 
-/* Ef er spurt um rót, þá er kallað á fallið readAll()
-   sem sækir öll rows úr gagnagruni og það er skila til notandans */
+/* Ef það er sent GET á rót þá er lesið gögn af gangagruni
+   og skilað það sem gagnagrunur skilar  */
 router.get('/', (req, res) => {
   readAll().then((data) => { res.status(200).json(data); });
 });
 
-/* Ef stödd á rót og spurt um id
-   þá er sótt Id og villu chekkað hana ef hun stends ekki við kröfu
-   það er skilað 400 villu með villu ástæðu
-   annars ef það er i lagi skilað 200 með json hlut sem hefur
-   sama id sem aðili bað um */
+/* Ef er sent GET með parameter sem á að vera heiltala >0
+   það er first athugað hvort id er löglegt inntak,
+   svo athugað hvort Id er til,
+   ef það er ekki til skila 404 villu með villumeldingu
+   annars 200 með gögnum sem gagnagrunur skilar */
 router.get('/:id', (req, res) => {
-  const { id } = req.params;// sækja id sem var slegið frá notenda
-  // Ef notandi sló inn eitthvað sem er ekki tala
+  const { id } = req.params;
   const error = validateId(id);
   if (error !== null) {
     res.status(400).json(error);
   } else {
-  // Ef það er komist hingað þá er amk leitarstrengur löglegur
     readOne(id).then((data) => {
-    // Ef það fæst tómt obj þá er nótan ekki til i pg
       if (data.length === 0) {
         res.status(404).json({ error: 'Note not found' });
       } else {
@@ -77,10 +82,9 @@ router.get('/:id', (req, res) => {
   }
 });
 
-/* Ef stödd á rót og gerum post þá er athugað
-   hvort gögnin eru á löglegu formi ef þau eru ekki þá er
-   skilað villu meldingunar með 400 kóða
-   annars þá er kallað */
+/* Ef það er sent POST þá þarf að athuga hvort gögnin eru á
+   löglegu formi og ef þeir eru þá er þeim skráð i gagnagrun
+   og skilað svo þeim sem json */
 router.post('/', (req, res) => {
   const {
     datetime,
@@ -96,6 +100,10 @@ router.post('/', (req, res) => {
   }
 });
 
+/* Ef það er sent PUT með heiltölu parameter
+   það þarf fyrst að athuga hvort id er löglegt inntak
+   svo hvort þetta id er til þá má validata gögn og
+   ef það er lagi þá uppfæra notu id með nyjum gögnum */
 router.put('/:id', (req, res) => {
   const { id } = req.params;
 
@@ -110,7 +118,6 @@ router.put('/:id', (req, res) => {
     res.status(400).json(error);
   } else {
     readOne(id).then((data) => {
-      // Ef það fæst tómt obj þá er nótan ekki til i pg
       if (data.length === 0) {
         res.status(404).json({ error: 'id not found' });
       } else {
@@ -127,6 +134,10 @@ router.put('/:id', (req, res) => {
   }
 });
 
+/* EF það er sent DELETE með heiltölu parameter þá
+   þarf að athuga hvort id er löglegt inntak svo
+   þarf að athuga hvort þetta id er til og þá ef það er til
+   þa þarf að eyða þvi */
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const error = validateId(id);
@@ -143,4 +154,5 @@ router.delete('/:id', (req, res) => {
     });
   }
 });
+
 module.exports = router;
